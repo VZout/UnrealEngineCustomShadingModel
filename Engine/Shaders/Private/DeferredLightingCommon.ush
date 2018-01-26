@@ -538,10 +538,24 @@ float4 GetDynamicLighting(float3 WorldPosition, float3 CameraVector, FGBufferDat
 			#else
 				float3 LobeEnergy = AreaLightSpecular(LightData, LobeRoughness, ToLight, L, V, N);
 
+				// Custom toon shadow code.
+				float3 AttenuationColor = 0.f;
+
+				BRANCH
+				if(ShadingModelID == SHADINGMODELID_CUSTOM_TOON)
+				{
+					float Range = GBuffer.CustomData.x * 0.5f;
+					AttenuationColor = LightColor * ((DistanceAttenuation * LightRadiusMask * SpotFalloff) * smoothstep(0.5f - Range, 0.5f + Range, SurfaceShadow) * 0.1f);
+				}
+				else
+				{
+					AttenuationColor = LightColor * (NoL * SurfaceAttenuation);
+				}
+
 				// accumulate surface
 				{
 					float3 SurfaceLighting = SurfaceShading(GBuffer, LobeRoughness, LobeEnergy, L, V, N, Random);
-					LightAccumulator_Add(LightAccumulator, SurfaceLighting, (1.0/PI), LightColor * (NoL * SurfaceAttenuation), bNeedsSeparateSubsurfaceLightAccumulation);
+					LightAccumulator_Add(LightAccumulator, SurfaceLighting, (1.0/PI), AttenuationColor, bNeedsSeparateSubsurfaceLightAccumulation);
 				}
 
 				// accumulate subsurface

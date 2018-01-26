@@ -437,6 +437,7 @@ namespace EParticleCollisionMode
 UENUM()
 enum EMaterialShadingModel
 {
+	MSM_Toon				UMETA(DisplayName="Custom Toon"),
 	MSM_Unlit				UMETA(DisplayName="Unlit"),
 	MSM_DefaultLit			UMETA(DisplayName="Default Lit"),
 	MSM_Subsurface			UMETA(DisplayName="Subsurface"),

@@ -710,6 +710,16 @@ float3 SubsurfaceShadingPreintegratedSkin( FGBufferData GBuffer, float3 L, float
 	return PreintegratedBRDF * SubsurfaceColor;
 }
 
+// Custon toon shading
+float3 CustomToonShading( FGBufferData GBuffer, float3 Roughness, float3 L, float3 V, half3 N)
+{
+	float Range = GBuffer.CustomData.x * 0.5f;
+	float3 H = normalize(V+L);
+	float NoH = saturate( dot(N, H));
+
+	return GBuffer.DiffuseColor + saturate(smoothstep(0.5f - Range, 0.5f + Range, D_GGX(Roughness.y, NoH)) * GBuffer.SpecularColor);
+}
+
 // @param DiffSpecMask .r: diffuse, .g:specular e.g. float2(1,1) for both, float2(1,0) for diffuse only
 float3 SurfaceShading( FGBufferData GBuffer, float3 LobeRoughness, float3 LobeEnergy, float3 L, float3 V, half3 N, uint2 Random )
 {
@@ -728,6 +738,8 @@ float3 SurfaceShading( FGBufferData GBuffer, float3 LobeRoughness, float3 LobeEn
 			return ClothShading( GBuffer, LobeRoughness, LobeEnergy, L, V, N );
 		case SHADINGMODELID_EYE:
 			return EyeShading( GBuffer, LobeRoughness, LobeEnergy, L, V, N );
+		case SHADINGMODELID_CUSTOM_TOON:
+			return CustomToonShading(GBuffer, LobeRoughness, L, V, N);
 		default:
 			return 0;
 	}
